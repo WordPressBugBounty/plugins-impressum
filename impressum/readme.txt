@@ -2,8 +2,8 @@
 Contributors: epiphyt, kittmedia, krafit
 Tags: impressum, legal notice, imprint, privacy policy
 Requires at least: 5.0
-Stable tag: 2.0.5
-Tested up to: 6.6
+Stable tag: 2.0.6
+Tested up to: 6.8
 Requires PHP: 5.6
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -24,11 +24,12 @@ Impressum Plus is the pro version of Impressum, which not only adds support for 
 * a feature rich and automated Privacy Policy generator
 * Preset for new sites in a multisite
 * Extensive REST API
+* WP-CLI support
 * Many more filters for developers
 
 [Buy now](https://epiph.yt/en/product/impressum-plus/)
 
-[Checkout all features of Impressum Plus](https://impressum.plus/en/features/)
+[Check out all features of Impressum Plus](https://impressum.plus/en/features/)
 
 
 == Installation ==
@@ -59,7 +60,7 @@ After this initial setup, Impressum just sits in your installation and serves yo
 
 = Can I really use this plugin free of charge? =
 
-Yes. Impressum is and always will be available for free. However, if your site is legally operated by a legal entity who's not an individual person, you must install _Impressum Plus_, in order to use all fields necessary for your legal entity. Get it from here: [https://impressum.plus/en/](https://impressum.plus/en/).
+Yes. Impressum is and always will be available for free. However, if your site is legally operated by a legal entity who's not an individual person, you must install Impressum Plus, in order to use all fields necessary for your legal entity. Get it from here: [https://impressum.plus/en/](https://impressum.plus/en/).
 
 = Does Impressum share any of my data? (GDPR) =
 
@@ -85,6 +86,10 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= 2.0.6 =
+* Improved: Compatibility with WordPress 6.8
+* Overhauled: Text passages
+
 = 2.0.5 =
 * Improved: Made it more clear that you can also use the "Imprint" block in the block editor
 * Improved: The comparison table between Impressum and Impressum Plus is now accessible
@@ -93,7 +98,7 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 * Fixed a PHP notice in PHP 8.2
 
 = 2.0.3 =
-* Added legal entity eG (requires _Impressum Plus_ to be usable)
+* Added legal entity eG (requires Impressum Plus to be usable)
 * Fixed loading translations for the block editor
 
 = 2.0.2 =
@@ -106,7 +111,7 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 * Added imprint block
 * Allow setting the imprint page
 * Complete code refactoring
-* Add comparison table for _Impressum Plus_
+* Add comparison table for Impressum Plus
 * Add possibility to output fields without title
 * Small user interface improvements
 * Fixed removing the welcome message
