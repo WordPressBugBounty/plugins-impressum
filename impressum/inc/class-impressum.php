@@ -4,8 +4,9 @@ namespace epiphyt\Impressum;
 /**
  * The main Impressum class.
  * 
- * @author		Epiphyt
- * @license		GPL2 <https://www.gnu.org/licenses/gpl-2.0.html>
+ * @author	Epiphyt
+ * @license	GPL2
+ * @package	epiphyt\Impressum
  */
 class Impressum {
 	use Singleton;
@@ -53,7 +54,7 @@ class Impressum {
 	 * Initialize the class.
 	 */
 	public function init() {
-		\add_action( 'init', [ $this, 'load_settings' ] );
+		\add_action( 'init', [ $this, 'load_settings' ], 10 );
 		\add_action( 'init', [ $this, 'load_textdomain' ], 5 );
 		\add_action( 'pre_update_option_impressum_imprint_options', [ $this, 'twice_daily_cron_activation' ] );
 		\register_activation_hook( $this->plugin_file, [ $this, 'twice_daily_cron_activation' ] );
@@ -74,6 +75,10 @@ class Impressum {
 		$option = Helper::get_option( $option_name, true );
 		
 		foreach ( $this->settings_fields as $name => $field ) {
+			if ( $name === 'contact_form_page' && ! empty( $option[ $name ] ) ) {
+				$option[ $name ] = \get_permalink( $option[ $name ] );
+			}
+			
 			$fields[ $name ] = [
 				'field_title' => ( ! empty( $field['field_title'] ) ? $field['field_title'] : '' ),
 				'title' => $field['title'],
@@ -106,37 +111,21 @@ class Impressum {
 	 * Load our settings in an array.
 	 */
 	public function load_settings() {
-		$this->settings_fields = [
-			'address' => [
+		$this->settings_fields = [ // phpcs:ignore SlevomatCodingStandard.Arrays.AlphabeticallySortedByKeys.IncorrectKeyOrder
+			'page' => [
 				'api' => [
-					'description' => \esc_html__( 'The address of the responsible person.', 'impressum' ),
-					'type' => 'string',
+					'description' => \esc_html__( 'The imprint page ID.', 'impressum' ),
+					'type' => 'integer',
 				],
 				'args' => [
 					'class' => 'impressum_row',
-					'label_for' => 'address',
-					'required' => true,
+					'label_for' => 'page',
 				],
-				'callback' => 'textarea',
+				'callback' => 'page',
+				'no_output' => true,
 				'page' => 'impressum_imprint',
 				'section' => 'impressum_section_imprint',
-				'title' => \__( 'Address', 'impressum' ),
-			],
-			'address_alternative' => [
-				'api' => [
-					'description' => \esc_html__( 'An alternative address.', 'impressum' ),
-					'type' => 'string',
-				],
-				'args' => [
-					'class' => 'impressum_row',
-					'label_for' => 'address_alternative',
-					'required' => false,
-				],
-				'callback' => 'textarea',
-				'field_title' => \__( 'Address', 'impressum' ),
-				'page' => 'impressum_imprint',
-				'section' => 'impressum_section_imprint',
-				'title' => \__( 'Alternative Address', 'impressum' ),
+				'title' => \__( 'Imprint Page', 'impressum' ),
 			],
 			'country' => [
 				'api' => [
@@ -154,36 +143,6 @@ class Impressum {
 				'page' => 'impressum_imprint',
 				'section' => 'impressum_section_imprint',
 				'title' => \__( 'Country', 'impressum' ),
-			],
-			'email' => [
-				'api' => [
-					'description' => \esc_html__( 'The email address of the responsible person.', 'impressum' ),
-					'type' => 'string',
-				],
-				'args' => [
-					'class' => 'impressum_row',
-					'label_for' => 'email',
-					'required' => true,
-				],
-				'callback' => 'email',
-				'page' => 'impressum_imprint',
-				'section' => 'impressum_section_imprint',
-				'title' => \__( 'Email Address', 'impressum' ),
-			],
-			'fax' => [
-				'api' => [
-					'description' => \esc_html__( 'The fax number of the responsible person.', 'impressum' ),
-					'type' => 'string',
-				],
-				'args' => [
-					'class' => 'impressum_row',
-					'label_for' => 'fax',
-					'required' => false,
-				],
-				'callback' => 'phone',
-				'page' => 'impressum_imprint',
-				'section' => 'impressum_section_imprint',
-				'title' => \__( 'Fax', 'impressum' ),
 			],
 			'legal_entity' => [
 				'api' => [
@@ -217,16 +176,51 @@ class Impressum {
 				'section' => 'impressum_section_imprint',
 				'title' => \__( 'Name', 'impressum' ),
 			],
-			'page' => [
+			'address' => [
+				'api' => [
+					'description' => \esc_html__( 'The address of the responsible person.', 'impressum' ),
+					'type' => 'string',
+				],
 				'args' => [
 					'class' => 'impressum_row',
-					'label_for' => 'page',
+					'label_for' => 'address',
+					'required' => true,
 				],
-				'callback' => 'page',
-				'no_output' => true,
+				'callback' => 'textarea',
 				'page' => 'impressum_imprint',
 				'section' => 'impressum_section_imprint',
-				'title' => \__( 'Imprint Page', 'impressum' ),
+				'title' => \__( 'Address', 'impressum' ),
+			],
+			'address_alternative' => [
+				'api' => [
+					'description' => \esc_html__( 'An alternative address.', 'impressum' ),
+					'type' => 'string',
+				],
+				'args' => [
+					'class' => 'impressum_row',
+					'label_for' => 'address_alternative',
+					'required' => false,
+				],
+				'callback' => 'textarea',
+				'field_title' => \__( 'Address', 'impressum' ),
+				'page' => 'impressum_imprint',
+				'section' => 'impressum_section_imprint',
+				'title' => \__( 'Alternative Address', 'impressum' ),
+			],
+			'email' => [
+				'api' => [
+					'description' => \esc_html__( 'The email address of the responsible person.', 'impressum' ),
+					'type' => 'string',
+				],
+				'args' => [
+					'class' => 'impressum_row',
+					'label_for' => 'email',
+					'required' => true,
+				],
+				'callback' => 'email',
+				'page' => 'impressum_imprint',
+				'section' => 'impressum_section_imprint',
+				'title' => \__( 'Email Address', 'impressum' ),
 			],
 			'phone' => [
 				'api' => [
@@ -236,12 +230,44 @@ class Impressum {
 				'args' => [
 					'class' => 'impressum_row',
 					'label_for' => 'phone',
-					'required' => true,
+					'required' => false,
 				],
 				'callback' => 'phone',
 				'page' => 'impressum_imprint',
 				'section' => 'impressum_section_imprint',
 				'title' => \__( 'Telephone', 'impressum' ),
+			],
+			'contact_form_page' => [
+				'api' => [
+					'description' => \esc_html__( 'The contact form page ID.', 'impressum' ),
+					'type' => 'integer',
+				],
+				'args' => [
+					'class' => 'impressum_row',
+					'description' => \__( 'Since you need a fast contact possibility, you either have to publish your phone number or have a contact form where you can respond within 1 hour.', 'impressum' ),
+					'label_for' => 'contact_form_page',
+				],
+				'callback' => 'page',
+				'field_title' => \__( 'Contact', 'impressum' ),
+				'option' => 'impressum_imprint_options',
+				'page' => 'impressum_imprint',
+				'section' => 'impressum_section_imprint',
+				'title' => \__( 'Contact Form Page', 'impressum' ),
+			],
+			'fax' => [
+				'api' => [
+					'description' => \esc_html__( 'The fax number of the responsible person.', 'impressum' ),
+					'type' => 'string',
+				],
+				'args' => [
+					'class' => 'impressum_row',
+					'label_for' => 'fax',
+					'required' => false,
+				],
+				'callback' => 'phone',
+				'page' => 'impressum_imprint',
+				'section' => 'impressum_section_imprint',
+				'title' => \__( 'Fax', 'impressum' ),
 			],
 			'press_law_checkbox' => [
 				'api' => [
@@ -281,6 +307,7 @@ class Impressum {
 				],
 				'args' => [
 					'class' => 'impressum_row vat_id',
+					'description' => \__( 'Your VAT ID in format XX123456789, which means at least two letters by following some numbers (the amount depends on your country).', 'impressum' ),
 					'label_for' => 'vat_id',
 					'required' => false,
 				],
@@ -288,6 +315,23 @@ class Impressum {
 				'page' => 'impressum_imprint',
 				'section' => 'impressum_section_imprint',
 				'title' => \__( 'VAT ID', 'impressum' ),
+			],
+			'business_id' => [
+				'api' => [
+					'description' => \esc_html__( 'The business ID of the responsible person.', 'impressum' ),
+					'type' => 'string',
+				],
+				'args' => [
+					'class' => 'impressum_row impressum_business_id',
+					'description' => \__( 'Your business ID in format DE123456789-00001, which means two letters by following nine numbers, a dash and five additional numbers.', 'impressum' ),
+					'label_for' => 'business_id',
+					'required' => false,
+				],
+				'callback' => 'text',
+				'option' => 'impressum_imprint_options',
+				'page' => 'impressum_imprint',
+				'section' => 'impressum_section_imprint',
+				'title' => \__( 'Business ID', 'impressum' ),
 			],
 		];
 		
@@ -307,7 +351,7 @@ class Impressum {
 		$this->countries = [
 			'arg' => [
 				'locale' => 'es-ar',
-				'title' => \__( 'Argentinia', 'impressum' ),
+				'title' => \__( 'Argentina', 'impressum' ),
 			],
 			'aus' => [
 				'locale' => 'en-au',
@@ -473,7 +517,7 @@ class Impressum {
 			],
 			'svn' => [
 				'locale' => 'sl',
-				'title' => \__( 'Slowenia', 'impressum' ),
+				'title' => \__( 'Slovenia', 'impressum' ),
 			],
 			'swe' => [
 				'locale' => 'sv',
@@ -513,9 +557,9 @@ class Impressum {
 		/**
 		 * Filter the countries before localized alphabetical sorting.
 		 * 
-		 * @param	array	$countries The current countries
+		 * @param	string[][]	$countries The current countries
 		 */
-		$this->countries = \apply_filters( 'impressum_country_pre_sort', $this->countries );
+		$this->countries = (array) \apply_filters( 'impressum_country_pre_sort', $this->countries );
 		
 		$this->legal_entities = [
 			'ag' => \__( 'AG', 'impressum' ),
@@ -541,9 +585,9 @@ class Impressum {
 		/**
 		 * Filter the legal entities before localized alphabetical sorting.
 		 * 
-		 * @param	array	$countries The current countries
+		 * @param	string[]	$countries The current countries
 		 */
-		$this->legal_entities = \apply_filters( 'impressum_legal_entity_pre_sort', $this->legal_entities );
+		$this->legal_entities = (array) \apply_filters( 'impressum_legal_entity_pre_sort', $this->legal_entities );
 		
 		// make sure the array is always sorted depending on localization
 		\uasort( $this->countries, static function( $a, $b ) {
@@ -597,12 +641,6 @@ class Impressum {
 	public function twice_daily_cron_activation( $value = [] ) {
 		if ( ! \wp_next_scheduled( 'impressum_twice_daily_cron' ) ) {
 			\wp_schedule_event( \time(), 'twicedaily', 'impressum_twice_daily_cron' );
-		}
-		
-		// if running before updating option, this represents the value
-		// just pass it
-		if ( $value ) {
-			return $value;
 		}
 		
 		return $value;

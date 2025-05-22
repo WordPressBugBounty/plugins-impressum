@@ -5,7 +5,7 @@ namespace epiphyt\Impressum;
 Plugin Name:		Impressum
 Plugin URI:			https://wordpress.org/plugins/impressum/
 Description:		Simple Imprint Generator
-Version:			2.0.6
+Version:			2.1.0
 Requires at least:	5.0
 Requires PHP:		5.6
 Author:				Epiphyt
@@ -30,20 +30,21 @@ along with Impressum. If not, see https://www.gnu.org/licenses/gpl-2.0.html.
 */
 \defined( 'ABSPATH' ) || exit;
 
-\define( 'EPI_IMPRESSUM_VERSION', '2.0.6' );
+if ( ! \defined( 'EPI_IMPRESSUM_BASE' ) ) {
+	if ( \file_exists( \WP_PLUGIN_DIR . '/impressum/' ) ) {
+		\define( 'EPI_IMPRESSUM_BASE', \WP_PLUGIN_DIR . '/impressum/' );
+	}
+	else if ( \file_exists( \WPMU_PLUGIN_DIR . '/impressum/' ) ) {
+		\define( 'EPI_IMPRESSUM_BASE', \WPMU_PLUGIN_DIR . '/impressum/' );
+	}
+	else {
+		\define( 'EPI_IMPRESSUM_BASE', \plugin_dir_path( __FILE__ ) );
+	}
+}
 
-if ( \file_exists( \WP_PLUGIN_DIR . '/impressum/' ) ) {
-	\define( 'EPI_IMPRESSUM_BASE', \WP_PLUGIN_DIR . '/impressum/' );
-}
-else if ( \file_exists( \WPMU_PLUGIN_DIR . '/impressum/' ) ) {
-	\define( 'EPI_IMPRESSUM_BASE', \WPMU_PLUGIN_DIR . '/impressum/' );
-}
-else {
-	\define( 'EPI_IMPRESSUM_BASE', \plugin_dir_path( __FILE__ ) );
-}
-
-\define( 'EPI_IMPRESSUM_FILE', __FILE__ );
-\define( 'EPI_IMPRESSUM_URL', \plugin_dir_url( \EPI_IMPRESSUM_BASE . 'impressum.php' ) );
+\define( 'EPI_IMPRESSUM_FILE', \EPI_IMPRESSUM_BASE . \basename( __FILE__ ) );
+\define( 'EPI_IMPRESSUM_URL', \plugin_dir_url( \EPI_IMPRESSUM_FILE ) );
+\define( 'EPI_IMPRESSUM_VERSION', '2.1.0' );
 
 /**
  * Autoload all necessary classes.
@@ -65,7 +66,6 @@ else {
 		
 		if ( \file_exists( $maybe_file ) ) {
 			require_once $maybe_file;
-			
 			break;
 		}
 	}
