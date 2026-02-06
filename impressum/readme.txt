@@ -2,8 +2,8 @@
 Contributors: epiphyt, kittmedia, krafit
 Tags: impressum, legal notice, imprint, privacy policy
 Requires at least: 5.0
-Stable tag: 2.1.3
-Tested up to: 6.8
+Stable tag: 2.2.2
+Tested up to: 6.9
 Requires PHP: 5.6
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -20,7 +20,7 @@ Impressum Plus is the pro version of Impressum, which not only adds support for 
 
 #### All features of Impressum Plus
 
-* Support for a wide variety of legal entities (AG, e.K., e.V., eG, Einzelkaufmann, GbR, gGmbH, GmbH, GmbH & Co. KG, KG, KGaA, OHG, Partnership, UG (haftungsbeschränkt) and UG (haftungsbeschränkt) & Co. KG)
+* Support for a wide variety of legal entities (AG, e.K., e.V., eG, Einzelkaufmann, GbR, GesbR, gGmbH, GmbH, GmbH & Co. KG, KG, KGaA, OHG, Partnership, UG (haftungsbeschränkt) and UG (haftungsbeschränkt) & Co. KG)
 * a feature rich and automated Privacy Policy generator
 * an Accessibility Information generator
 * Preset for new sites in a multisite
@@ -86,6 +86,18 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 3. Your imprint will be formatted for you. Change its design with just a couple of lines of CSS.
 
 == Changelog ==
+
+= 2.2.2 =
+* Fixed: Disabling a single field in the block to display when "all" are selected previously.
+
+= 2.2.1 =
+* Fixed: Some assets in the backend could not be loaded and thus prevented JavaScript functionality
+
+= 2.2.0 =
+* Added: All missing European countries
+* Changed: The multiselect field to (de-)activate fields in the block is now a list of checkboxes
+* Changed: "Telephone" is now "Phone" everywhere by default
+* Fixed: Fields without proper output are now also hidden in the editor
 
 = 2.1.3 =
 * Fixed: Potential PHP warning if not all fields are displayed

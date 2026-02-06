@@ -34,7 +34,7 @@ class Impressum {
 	/**
 	 * @var		string The full path to the main plugin file
 	 */
-	public $plugin_file = '';
+	public $plugin_file = \EPI_IMPRESSUM_FILE;
 	
 	/**
 	 * @var		array All settings fields.
@@ -86,6 +86,7 @@ class Impressum {
 			
 			$fields[ $name ] = [
 				'field_title' => ( ! empty( $field['field_title'] ) ? $field['field_title'] : '' ),
+				'no_output' => isset( $field['no_output'] ) ? $field['no_output'] : false,
 				'title' => $field['title'],
 				'value' => ( ! empty( $option[ $name ] ) ? $option[ $name ] : '' ),
 			];
@@ -248,7 +249,7 @@ class Impressum {
 				'callback' => 'phone',
 				'page' => 'impressum_imprint',
 				'section' => 'impressum_section_imprint',
-				'title' => \__( 'Telephone', 'impressum' ),
+				'title' => \__( 'Phone', 'impressum' ),
 			],
 			'contact_form_page' => [
 				'api' => [
@@ -291,11 +292,12 @@ class Impressum {
 				],
 				'args' => [
 					'class' => 'impressum_row impressum_press_law_checkbox',
+					'label' => \__( 'I have journalistic/editorial content on my website', 'impressum' ),
 					'label_for' => 'press_law_checkbox',
 					'required' => false,
 					'setting' => 'impressum_imprint_options',
 				],
-				'callback' => 'press_law_checkbox',
+				'callback' => 'checkbox',
 				'no_output' => true,
 				'page' => 'impressum_imprint',
 				'section' => 'impressum_section_imprint',
@@ -412,6 +414,10 @@ class Impressum {
 				'locale' => 'es-co',
 				'title' => \__( 'Columbia', 'impressum' ),
 			],
+			'cyp' => [
+				'locale' => 'el',
+				'title' => \__( 'Cyprus', 'impressum' ),
+			],
 			'cze' => [
 				'locale' => 'cs',
 				'title' => \__( 'Czech Republic', 'impressum' ),
@@ -496,6 +502,18 @@ class Impressum {
 				'locale' => 'lt',
 				'title' => \__( 'Lithuania', 'impressum' ),
 			],
+			'lux' => [
+				'locale' => 'lb',
+				'title' => \__( 'Luxembourg', 'impressum' ),
+			],
+			'lva' => [
+				'locale' => 'lv',
+				'title' => \__( 'Latvia', 'impressum' ),
+			],
+			'mlt' => [
+				'locale' => 'mt',
+				'title' => \__( 'Malta', 'impressum' ),
+			],
 			'nld' => [
 				'locale' => 'nl',
 				'title' => \__( 'Netherlands', 'impressum' ),
@@ -533,6 +551,10 @@ class Impressum {
 			'srb' => [
 				'locale' => 'sr',
 				'title' => \__( 'Serbia', 'impressum' ),
+			],
+			'svk' => [
+				'locale' => 'sk',
+				'title' => \__( 'Slovakia', 'impressum' ),
 			],
 			'svn' => [
 				'locale' => 'sl',
@@ -588,6 +610,7 @@ class Impressum {
 			'ev' => \__( 'e.V.', 'impressum' ),
 			'freelancer' => \__( 'Freelancer', 'impressum' ),
 			'gbr' => \__( 'GbR', 'impressum' ),
+			'gesbr' => \__( 'GesbR', 'impressum' ),
 			'ggmbh' => \__( 'gGmbH', 'impressum' ),
 			'gmbh' => \__( 'GmbH', 'impressum' ),
 			'gmbh_co_kg' => \__( 'GmbH & Co. KG', 'impressum' ),
@@ -645,9 +668,18 @@ class Impressum {
 	 * @param	string	$file The path to the file
 	 */
 	public function set_plugin_file( $file ) {
+		\_doing_it_wrong(
+			__METHOD__,
+			\sprintf(
+				/* translators: alternative method */
+				\esc_html__( 'Use %s instead', 'impressum' ),
+				'EPI_IMPRESSUM_FILE'
+			),
+			'2.1.0'
+		);
+		
 		if ( \file_exists( $file ) ) {
 			$this->plugin_file = $file;
-			$this->admin->set_plugin_file( $this->plugin_file );
 		}
 	}
 	
