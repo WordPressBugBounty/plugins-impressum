@@ -1,10 +1,10 @@
 === Impressum ===
 Contributors: epiphyt, kittmedia, krafit
 Tags: impressum, legal notice, imprint, privacy policy
-Requires at least: 5.0
-Stable tag: 2.2.2
-Tested up to: 6.9
-Requires PHP: 5.6
+Requires at least: 6.8
+Stable tag: 3.0.0
+Tested up to: 7.0
+Requires PHP: 8.1
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,14 @@ Impressum Plus is the pro version of Impressum, which not only adds support for 
 [Check out all features of Impressum Plus](https://impressum.plus/en/features/)
 
 [Buy now](https://epiph.yt/en/?add-to-cart=26)
+
+### Contribution
+
+Feel free to contribute. The code is available at [GitHub](https://github.com/epiphyt/impressum).
+
+### Documentation
+
+You can find the documentation for Impressum at [docs.epiph.yt](https://docs.epiph.yt/impressum/).
 
 
 == Installation ==
@@ -87,8 +95,13 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
-= 2.2.2 =
-* Fixed: Disabling a single field in the block to display when "all" are selected previously.
+= 3.0.0 =
+* Added: Sorting fields in the imprint block
+* Added: Link to documentation in plugin row
+* Improved: Code base (see https://docs.epiph.yt/impressum/developer/migration-3.html)
+* Fixed: Disabling a single field in the block to display when "all" are selected previously
+* Fixed: Welcome notice option will now be removed on uninstallation
+* Removed: Deprecated code
 
 = 2.2.1 =
 * Fixed: Some assets in the backend could not be loaded and thus prevented JavaScript functionality
@@ -189,3 +202,5 @@ Thanks [@pixolin](https://profiles.wordpress.org/pixolin) & [@zodiac1978](https:
 * Initial release
 
 == Upgrade Notice ==
+
+TODO

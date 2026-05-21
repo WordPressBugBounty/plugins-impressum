@@ -14,20 +14,8 @@ class Frontend {
 	/**
 	 * Initialize the frontend functions.
 	 */
-	public function init() {
-		\add_action( 'init', [ $this, 'register_blocks' ] );
+	public function init(): void {
 		\add_shortcode( 'impressum', [ $this, 'render' ] );
-	}
-	
-	/**
-	 * Register Gutenberg blocks.
-	 */
-	public function register_blocks() {
-		\register_block_type( 'impressum/imprint', [
-			'editor_script' => 'impressum-imprint-block',
-			'editor_style' => 'impressum-imprint-block-editor-styles',
-			'render_callback' => [ $this, 'render_block' ],
-		] );
 	}
 	
 	/**
@@ -36,11 +24,11 @@ class Frontend {
 	 * @param	array|string	$attributes A set of attributes
 	 * @return	string The imprint output
 	 */
-	public function render( $attributes ) {
+	public function render( array|string $attributes ): string {
 		$attributes = (array) $attributes;
 		$attributes['field_data'] = Helper::get_option( 'impressum_field_data', true );
 		$fields = \array_filter( (array) Helper::get_option( 'impressum_imprint_options', true ) );
-		$field_data = Impressum::get_instance()->get_block_fields( 'impressum_imprint_options' );
+		$field_data = \epiphyt\Impressum\get_container()->get( 'plugin' )->get_block_fields( 'impressum_imprint_options' );
 		$field_keys = \array_keys( $fields );
 		$output = '';
 		$sections = ( ! empty( $attributes['sections'] ) ? \array_map( 'trim', \explode( ',', $attributes['sections'] ) ) : [] );
@@ -48,15 +36,15 @@ class Frontend {
 		if ( ! empty( $attributes['enabledFields'] ) ) {
 			\usort( $field_keys, static function( $a, $b ) use ( $attributes, $field_data ) {
 				$flipped = \array_flip( $attributes['enabledFields'] );
-				$left_title = isset( $field_data[ $a ]['custom_title'] ) ? $field_data[ $a ]['custom_title'] : '';
-				$right_title = isset( $field_data[ $b ]['custom_title'] ) ? $field_data[ $b ]['custom_title'] : '';
+				$left_title = $field_data[ $a ]['custom_title'] ?? '';
+				$right_title = $field_data[ $b ]['custom_title'] ?? '';
 				
 				if ( ! $left_title ) {
-					$left_title = isset( $field_data[ $a ]['title'] ) ? $field_data[ $a ]['title'] : '';
+					$left_title = $field_data[ $a ]['title'] ?? '';
 				}
 				
 				if ( ! $right_title ) {
-					$right_title = isset( $field_data[ $b ]['title'] ) ? $field_data[ $b ]['title'] : '';
+					$right_title = $field_data[ $b ]['title'] ?? '';
 				}
 				
 				if (
@@ -121,7 +109,7 @@ class Frontend {
 		}
 		
 		// check for title output
-		if ( ! empty( $attributes['className'] ) && \strpos( $attributes['className'], 'is-style-no-title' ) !== false ) {
+		if ( ! empty( $attributes['className'] ) && \str_contains( $attributes['className'], 'is-style-no-title' ) ) {
 			$attributes['titles'] = false;
 		}
 		if ( ! isset( $attributes['titles'] ) ) {
@@ -147,7 +135,8 @@ class Frontend {
 			// check block enabled fields
 			if ( ! empty( $attributes['enabledFields'] ) ) {
 				if (
-					(
+					! \in_array( 'all', $attributes['enabledFields'], true )
+					&& (
 						! isset( $field_data[ $field ]['custom_title'] )
 						|| ! \in_array( $field_data[ $field ]['custom_title'], $attributes['enabledFields'], true )
 					)
@@ -159,12 +148,14 @@ class Frontend {
 				}
 			}
 			
+			$field = \epiphyt\Impressum\get_container()->get( 'settings-registry' )->get_setting( 'impressum_imprint_options_' . $field );
+			
 			// check whether the field should be displayed
 			if (
 				empty( $value )
 				|| (
-					! empty( Impressum::get_instance()->settings_fields[ $field ]['no_output'] )
-					&& Impressum::get_instance()->settings_fields[ $field ]['no_output'] === true
+					! empty( $field->get_data()['hide_output'] )
+					&& $field->get_data()['hide_output'] === true
 					&& ! \in_array( $field, $sections, true )
 				)
 			) {
@@ -200,33 +191,30 @@ class Frontend {
 	 * @param	array	$attributes The block attributes
 	 * @return	string The imprint output
 	 */
-	public function render_block( $attributes ) {
+	public function render_block( array $attributes ): string {
 		return $this->render( $attributes );
 	}
 	
 	/**
 	 * Render a single field of the imprint.
 	 * 
-	 * @param	string	$field The field name (identifier)
-	 * @param	string	$value The field value
-	 * @param	array	$attributes The output attributes
-	 * @param	array	$fields All available fields
+	 * @param	\epiphyt\Impressum\settings\Setting	$field The field name (identifier)
+	 * @param	string								$value The field value
+	 * @param	array								$attributes The output attributes
+	 * @param	array								$fields All available fields
 	 * @return	string The formatted field value
 	 */
-	private function render_field( $field, $value, $attributes, $fields ) {
+	private function render_field( \epiphyt\Impressum\settings\Setting $field, string $value, array $attributes, array $fields ): string {
 		$output = '';
 		$title = '';
 		
 		// the field title
 		if ( $attributes['titles'] ) {
-			if ( ! empty( $attributes['field_data'][ $field ]['name'] ) ) {
-				$title = $attributes['field_data'][ $field ]['name'];
+			if ( ! empty( $attributes['field_data'][ $field->name ]['name'] ) ) {
+				$title = $attributes['field_data'][ $field->name ]['name'];
 			}
-			else if ( ! empty( Impressum::get_instance()->settings_fields[ $field ]['field_title'] ) ) {
-				$title = Impressum::get_instance()->settings_fields[ $field ]['field_title'];
-			}
-			else if ( ! empty( Impressum::get_instance()->settings_fields[ $field ]['title'] ) ) {
-				$title = Impressum::get_instance()->settings_fields[ $field ]['title'];
+			else {
+				$title = $field->get_title();
 			}
 		}
 		
@@ -234,15 +222,16 @@ class Frontend {
 		 * Filter the field title in the imprint shortcode.
 		 * 
 		 * @since	2.0.0
+		 * @since	3.0.0 Third parameter is now a Setting object
 		 * 
-		 * @param	string	$title The current field title
-		 * @param	array	$attributes The field arguments
-		 * @param	string	$field The field name
+		 * @param	string								$title The current field title
+		 * @param	array								$attributes The field arguments
+		 * @param	\epiphyt\Impressum\settings\Setting	$field The field name
 		 */
-		$title = (string) \apply_filters( "impressum_imprint_output_title_{$field}", $title, $attributes, $field );
+		$title = (string) \apply_filters( "impressum_imprint_output_title_{$field->name}", $title, $attributes, $field );
 		
 		// set the output
-		switch ( $field ) {
+		switch ( $field->name ) {
 			case 'contact_form_page':
 				$permalink = \get_permalink( $value );
 				
@@ -272,7 +261,7 @@ class Frontend {
 		 * @param	mixed[]		$attributes Field rendering attributes
 		 * @param	mixed[][]	$fields All fields to render
 		 */
-		$field_output = (string) \apply_filters( "impressum_imprint_output_field_{$field}", $field_output, $value, $field, $attributes, $fields );
+		$field_output = (string) \apply_filters( "impressum_imprint_output_field_{$field->name}", $field_output, $value, $field->name, $attributes, $fields );
 		
 		/**
 		 * Filter the output of a field.
@@ -285,7 +274,7 @@ class Frontend {
 		 * @param	mixed[]		$attributes Field rendering attributes
 		 * @param	mixed[][]	$fields All fields to render
 		 */
-		$field_output = (string) \apply_filters( 'impressum_imprint_output_field', $field_output, $value, $field, $attributes, $fields );
+		$field_output = (string) \apply_filters( 'impressum_imprint_output_field', $field_output, $value, $field->name, $attributes, $fields );
 		
 		if ( $attributes['titles'] && $attributes['markup'] ) {
 			$output .= '<dt>' . \esc_html( $title ) . '</dt>';
