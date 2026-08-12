@@ -29,7 +29,7 @@ final class Admin {
 	/**
 	 * Admin constructor.
 	 * 
-	 * @param	\epiphyt\Impressum\settings\Registry		$settings_registry Settings registry
+	 * @param	\epiphyt\Impressum\settings\Registry	$settings_registry Settings registry
 	 */
 	public function __construct( Registry $settings_registry ) {
 		$this->settings_registry = $settings_registry;
@@ -58,13 +58,25 @@ final class Admin {
 			return;
 		}
 		
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		if ( ! \current_user_can( 'manage_options' ) ) {
+			\wp_send_json_error();
+		}
+		
+		\check_ajax_referer( 'impressum_dismiss_notice', 'nonce' );
+		
 		if ( ! isset( $_POST['type'] ) ) {
 			\wp_send_json_error();
 		}
 		
-		$type = \esc_attr( \sanitize_text_field( \wp_unslash( $_POST['type'] ) ) );
-		// phpcs:enable
+		$type = \sanitize_text_field( \wp_unslash( $_POST['type'] ) );
+		$allowed_types = [
+			'impressum_validation_notice',
+			'impressum_welcome_notice',
+		];
+		
+		if ( ! \in_array( $type, $allowed_types, true ) ) {
+			\wp_send_json_error();
+		}
 		
 		if ( \update_option( 'dismissed-' . $type, true ) ) {
 			\wp_send_json_success();
@@ -86,7 +98,14 @@ final class Admin {
 		if ( \file_exists( $file_path ) ) {
 			$file_version = $is_debug ? (string) \filemtime( $file_path ) : \EPI_IMPRESSUM_VERSION;
 			
-			\wp_enqueue_script( 'impressum-dismissible-notice', \EPI_IMPRESSUM_URL . 'assets/js/' . ( $is_debug ? '' : 'build/' ) . 'ajax-dismissible-notice' . $suffix . '.js', [], $file_version );
+			\wp_enqueue_script( 'impressum-dismissible-notice', \EPI_IMPRESSUM_URL . 'assets/js/' . ( $is_debug ? '' : 'build/' ) . 'ajax-dismissible-notice' . $suffix . '.js', [], $file_version, [
+				'in_footer' => true,
+				'strategy' => 'defer',
+			] );
+			\wp_localize_script( 'impressum-dismissible-notice', 'imprintNotice', [
+				'ajaxUrl' => \admin_url( 'admin-ajax.php' ),
+				'nonce' => \wp_create_nonce( 'impressum_dismiss_notice' ),
+			] );
 		}
 		
 		// check for settings page
@@ -191,7 +210,12 @@ final class Admin {
 		}
 		
 		// special case for phone and contact_form_page
-		if ( empty( $options['phone'] ) && empty( $options['contact_form_page'] ) ) {
+		if (
+			empty( $options['phone'] )
+			&& empty( $options['contact_form_page'] )
+			&& isset( $settings[ $settings_prefix . 'phone' ] )
+			&& isset( $settings[ $settings_prefix . 'contact_form_page' ] )
+		) {
 			$invalid_fields['phone_contact_form'] = \sprintf(
 				/* translators: 1: a field title, 2: a field title */
 				\__( '%1$s or %2$s', 'impressum' ),
@@ -201,7 +225,7 @@ final class Admin {
 		}
 		
 		// special case for VAT ID
-		if ( ! isset( $invalid_fields['vat_id'] ) ) {
+		if ( ! isset( $invalid_fields['vat_id'] ) && isset( $settings[ $settings_prefix . 'vat_id' ] ) ) {
 			$regex = '/^(|ATU[0-9]{8}|BE0[0-9]{9}|BG[0-9]{9,10}|CY[0-9]{8}L|CZ[0-9]{8,10}|DE[0-9]{9}|DK[0-9]{8}|EE[0-9]{9}|(EL|GR)[0-9]{9}|ES[0-9A-Z][0-9]{7}[0-9A-Z]|FI[0-9]{8}|FR[0-9A-Z]{2}[0-9]{9}|GB([0-9]{9}([0-9]{3})?|[A-Z]{2}[0-9]{3})|HU[0-9]{8}|IE[0-9]S[0-9]{5}L|IT[0-9]{11}|LT([0-9]{9}|[0-9]{12})|LU[0-9]{8}|LV[0-9]{11}|MT[0-9]{8}|NL[0-9\+\*]{9}B[0-9]{2}|PL[0-9]{10}|PT[0-9]{9}|RO[0-9]{2,10}|SE[0-9]{12}|SI[0-9]{8}|SK[0-9]{10})$/';
 			
 			if ( ! empty( $options['vat_id'] ) && ! \preg_match( $regex, $options['vat_id'] ) ) {
@@ -210,7 +234,7 @@ final class Admin {
 		}
 		
 		// special case for business ID
-		if ( ! isset( $invalid_fields['business_id'] ) ) {
+		if ( ! isset( $invalid_fields['business_id'] ) && isset( $settings[ $settings_prefix . 'business_id' ] ) ) {
 			$regex = '/^(|(DE)?[0-9]{9}\-[0-9]{5})$/';
 			
 			if ( ! empty( $options['business_id'] ) && ! \preg_match( $regex, $options['business_id'] ) ) {
@@ -227,7 +251,10 @@ final class Admin {
 	 * Add a warning notice if the current imprint is not valid yet.
 	 */
 	public function invalid_notice(): void {
-		if ( \apply_filters( 'impressum_disabled_notice', self::$disabled_notice ) === true ) {
+		if (
+			\apply_filters( 'impressum_disabled_notice', self::$disabled_notice ) === true
+			|| ! \current_user_can( 'manage_options' )
+		) {
 			return;
 		}
 		
@@ -356,7 +383,7 @@ final class Admin {
 		\ob_start();
 		?>
 		<div class="nav-tab-content" id="nav-tab-content-get_plus">
-			<h3><?php \esc_html_e( 'Get an imprint for your company website!', 'impressum' ); ?></h3>
+			<h2><?php \esc_html_e( 'Get an imprint for your company website!', 'impressum' ); ?></h2>
 			<p>
 				<?php
 				/* translators: 1: plugin name, 2: commercial plugin name */
@@ -369,7 +396,13 @@ final class Admin {
 				\printf( \esc_html__( 'For a small fee, %s will provide you with the same seamless user experience as the free version. But in addition to the free versions features it will also cover a load of different legal entities and their quite diverse need for imprint data.', 'impressum' ), \esc_html__( 'Impressum Plus', 'impressum' ) );
 				?>
 			</p>
-			<h3><?php \esc_html_e( 'Go Plus to support development', 'impressum' ); ?></h3>
+			<p>
+				<?php
+				/* translators: commercial plugin name */
+				\printf( \esc_html__( 'Additionally, %s comes with additional generators for managing the privacy policy and accessibility information.', 'impressum' ), \esc_html__( 'Impressum Plus', 'impressum' ) );
+				?>
+			</p>
+			<h2><?php \esc_html_e( 'Go Plus to support development', 'impressum' ); ?></h2>
 			<p>
 				<?php
 				/* translators: commercial plugin name */
@@ -379,83 +412,89 @@ final class Admin {
 			<p><a href="<?= \esc_url( \__( 'https://impressum.plus/en/', 'impressum' ) ); ?>" class="button button-primary button-hero"><?php \esc_html_e( 'Get Impressum Plus now', 'impressum' ); ?></a></p>
 			
 			<h2><?php \esc_html_e( 'Compare now', 'impressum' ); ?></h2>
-			<table class="wp-list-table widefat striped impressum__compare-table">
-				<tbody>
+			<div class="impressum__compare-table--container">
+				<table class="wp-list-table widefat striped impressum__compare-table">
 					<thead>
-						<th><strong><?php \esc_html_e( 'Feature', 'impressum' ); ?></strong></th>
-						<th><strong><?php \esc_html_e( 'Impressum', 'impressum' ); ?></strong></th>
-						<th><strong><?php \esc_html_e( 'Impressum Plus', 'impressum' ); ?></strong></th>
+						<tr>
+							<th scope="col"><strong><?php \esc_html_e( 'Feature', 'impressum' ); ?></strong></th>
+							<th scope="col"><strong><?php \esc_html_e( 'Impressum', 'impressum' ); ?></strong></th>
+							<th scope="col"><strong><?php \esc_html_e( 'Impressum Plus', 'impressum' ); ?></strong></th>
+						</tr>
 					</thead>
-					<tr>
-						<td><strong><?php \esc_html_e( 'Imprint Generator', 'impressum' ); ?></strong></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><strong><?php \esc_html_e( 'Privacy Policy Generator', 'impressum' ); ?></strong></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><strong><?php \esc_html_e( 'Accessibility Information Generator', 'impressum' ); ?></strong></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Multisite: Base Compatibility', 'impressum' ); ?></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Block Editor Support', 'impressum' ); ?></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Legal content for personal usage', 'impressum' ); ?></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span><br></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Legal content for private companies', 'impressum' ); ?></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Legal content for corporations', 'impressum' ); ?></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Multisite: preset for new sites', 'impressum' ); ?></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'WP-CLI support', 'impressum' ); ?></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Enhanced REST API', 'impressum' ); ?></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
-					</tr>
-					<tr>
-						<td><?php \esc_html_e( 'Many filters for developers', 'impressum' ); ?></td>
-						<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span> <?php \esc_html_e( '(10+)', 'impressum' ); ?></td>
-						<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span> <?php \esc_html_e( '(50+)', 'impressum' ); ?></td>
-					</tr>
-					<tr>
-						<td><br></td>
-						<td></td>
-						<td>
-							<a href="<?= \esc_url( \__( 'https://epiph.yt/en/?add-to-cart=26', 'impressum' ) ); ?>" class="button button-primary"><?php \esc_html_e( 'Purchase', 'impressum' ); ?> <span class="screen-reader-text"><?php \esc_html_e( 'Impressum Plus', 'impressum' ); ?></span></a>
-							<a href="<?= \esc_url( \__( 'https://impressum.plus/en/', 'impressum' ) ); ?>" class="button button-secondary"><?php \esc_html_e( 'More information', 'impressum' ); ?> <span class="screen-reader-text"><?= \esc_html_x( 'about Impressum Plus', 'more information about the plugin', 'impressum' ); ?></a>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+					<tbody>
+						<tr>
+							<td><strong><?php \esc_html_e( 'Imprint Generator', 'impressum' ); ?></strong></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><strong><?php \esc_html_e( 'Privacy Policy Generator', 'impressum' ); ?></strong></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><strong><?php \esc_html_e( 'Accessibility Information Generator', 'impressum' ); ?></strong></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Multisite: Base Compatibility', 'impressum' ); ?></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Block Editor Support', 'impressum' ); ?></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Legal content for personal usage', 'impressum' ); ?></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span><br></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Legal content for private companies', 'impressum' ); ?></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Legal content for corporations', 'impressum' ); ?></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Multisite: preset for new sites', 'impressum' ); ?></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'WP-CLI support', 'impressum' ); ?></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Enhanced REST API', 'impressum' ); ?></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span></td>
+						</tr>
+						<tr>
+							<td><?php \esc_html_e( 'Many filters for developers', 'impressum' ); ?></td>
+							<td><span class="red"><?php \esc_html_e( 'No', 'impressum' ); ?></span> <?php \esc_html_e( '(10+)', 'impressum' ); ?></td>
+							<td><span class="green"><?php \esc_html_e( 'Yes', 'impressum' ); ?></span> <?php \esc_html_e( '(50+)', 'impressum' ); ?></td>
+						</tr>
+						<tr>
+							<td><br></td>
+							<td></td>
+							<td>
+								<div class="impressum__compare-table--buttons">
+									<a href="<?= \esc_url( \__( 'https://epiph.yt/en/?add-to-cart=26', 'impressum' ) ); ?>" class="button button-primary"><?php \esc_html_e( 'Purchase', 'impressum' ); ?></a>
+									<a href="<?= \esc_url( \__( 'https://impressum.plus/en/', 'impressum' ) ); ?>" class="button button-secondary"><?php \esc_html_e( 'More information', 'impressum' ); ?></a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 		<?php
 		$content = \ob_get_clean();
@@ -508,10 +547,10 @@ final class Admin {
 			// (sections are registered for "impressum", each field is registered to a specific section)
 			Helper::do_settings_sections( 'impressum_imprint' );
 			?>
-			<h3><?php \esc_html_e( 'Disclaimer', 'impressum' ); ?></h3>
+			<h2><?php \esc_html_e( 'Disclaimer', 'impressum' ); ?></h2>
 			<p><?php \esc_html_e( 'Please keep in mind that this plugin does not guarantee any legal compliance. You are responsible for the data you enter here. This plugin helps you to fill all necessary fields.', 'impressum' ); ?></p>
 			
-			<h3><?php \esc_html_e( 'Usage', 'impressum' ); ?></h3>
+			<h2><?php \esc_html_e( 'Usage', 'impressum' ); ?></h2>
 			<p><?php \esc_html_e( 'There are two methods available on how to output the imprint:', 'impressum' ); ?></p>
 			<ul class="impressum__regular-list">
 				<li><?php \esc_html_e( 'Add the "Imprint" block in your block editor wherever you want to output your imprint. It works everywhere the block editor is supported.', 'impressum' ); ?></li>
@@ -561,7 +600,7 @@ final class Admin {
 			
 			<?php \do_action( 'impressum_settings_form_before', $form_action, $current_tab, $default_tab ); ?>
 			
-			<form action="<?= \esc_html( $form_action ); ?>" method="post">
+			<form action="<?= \esc_url( $form_action ); ?>" method="post">
 				<input type="hidden" name="option_page" value="impressum_imprint" />
 				<input type="hidden" name="action" value="update" />
 				
@@ -610,8 +649,8 @@ final class Admin {
 	/**
 	 * Add plugin meta links.
 	 * 
-	 * @param	array	$input Registered links.
-	 * @param	string	$file  Current plugin file.
+	 * @param	array	$input Registered links
+	 * @param	string	$file Current plugin file
 	 * @return	array Merged links
 	 */
 	public static function render_plugin_documentation_link( array $input, string $file ): array {
