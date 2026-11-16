@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'epiphyt\\Basic_Auth\\Basic_Auth' => $baseDir . '/inc/lib/class-basic-auth.php',
     'epiphyt\\Impressum\\Admin' => $baseDir . '/inc/class-admin.php',
     'epiphyt\\Impressum\\Admin_Fields' => $baseDir . '/inc/class-admin-fields.php',
     'epiphyt\\Impressum\\Frontend' => $baseDir . '/inc/class-frontend.php',
@@ -14,9 +15,16 @@ return array(
     'epiphyt\\Impressum\\Plugin' => $baseDir . '/inc/class-plugin.php',
     'epiphyt\\Impressum\\Plugin_Container' => $baseDir . '/inc/class-plugin-container.php',
     'epiphyt\\Impressum\\Singleton' => $baseDir . '/inc/trait-singleton.php',
+    'epiphyt\\Impressum\\Site_Health' => $baseDir . '/inc/class-site-health.php',
+    'epiphyt\\Impressum\\api\\REST_API' => $baseDir . '/inc/api/class-rest-api.php',
+    'epiphyt\\Impressum\\api\\Settings_Controller' => $baseDir . '/inc/api/class-settings-controller.php',
     'epiphyt\\Impressum\\blocks\\Block_Imprint' => $baseDir . '/inc/blocks/class-block-imprint.php',
     'epiphyt\\Impressum\\blocks\\Block_Registry' => $baseDir . '/inc/blocks/class-block-registry.php',
     'epiphyt\\Impressum\\settings\\Data' => $baseDir . '/inc/settings/class-data.php',
+    'epiphyt\\Impressum\\settings\\Legacy_Renderer' => $baseDir . '/inc/settings/class-legacy-renderer.php',
     'epiphyt\\Impressum\\settings\\Registry' => $baseDir . '/inc/settings/class-registry.php',
+    'epiphyt\\Impressum\\settings\\Schema' => $baseDir . '/inc/settings/class-schema.php',
     'epiphyt\\Impressum\\settings\\Setting' => $baseDir . '/inc/settings/class-setting.php',
+    'epiphyt\\Impressum\\settings\\Tabs' => $baseDir . '/inc/settings/class-tabs.php',
+    'epiphyt\\Impressum\\settings\\Validator' => $baseDir . '/inc/settings/class-validator.php',
 );

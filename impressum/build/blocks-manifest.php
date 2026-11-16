@@ -14,6 +14,9 @@ return array(
 		),
 		'textdomain' => 'impressum',
 		'attributes' => array(
+			'anchor' => array(
+				'type' => 'string'
+			),
 			'enabledFields' => array(
 				'default' => array(
 					'all'
@@ -33,7 +36,39 @@ return array(
 			)
 		),
 		'supports' => array(
-			'html' => false
+			'__experimentalBorder' => array(
+				'color' => true,
+				'radius' => true,
+				'style' => true,
+				'width' => true
+			),
+			'anchor' => true,
+			'color' => array(
+				'link' => true,
+				'__experimentalDefaultControls' => array(
+					'background' => true,
+					'text' => true
+				)
+			),
+			'html' => false,
+			'spacing' => array(
+				'margin' => true,
+				'padding' => true
+			),
+			'typography' => array(
+				'fontSize' => true,
+				'lineHeight' => true,
+				'textAlign' => true,
+				'__experimentalFontFamily' => true,
+				'__experimentalFontStyle' => true,
+				'__experimentalFontWeight' => true,
+				'__experimentalLetterSpacing' => true,
+				'__experimentalTextDecoration' => true,
+				'__experimentalTextTransform' => true,
+				'__experimentalDefaultControls' => array(
+					'fontSize' => true
+				)
+			)
 		),
 		'editorScript' => 'file:./index.js',
 		'editorStyle' => array(

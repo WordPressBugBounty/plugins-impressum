@@ -4,10 +4,11 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf8bb86e3b5ac727a614c18a81a2c5139
+class ComposerStaticInit4cfd0d44fb5a95b17df5b028c1e1298a
 {
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'epiphyt\\Basic_Auth\\Basic_Auth' => __DIR__ . '/../..' . '/inc/lib/class-basic-auth.php',
         'epiphyt\\Impressum\\Admin' => __DIR__ . '/../..' . '/inc/class-admin.php',
         'epiphyt\\Impressum\\Admin_Fields' => __DIR__ . '/../..' . '/inc/class-admin-fields.php',
         'epiphyt\\Impressum\\Frontend' => __DIR__ . '/../..' . '/inc/class-frontend.php',
@@ -15,17 +16,24 @@ class ComposerStaticInitf8bb86e3b5ac727a614c18a81a2c5139
         'epiphyt\\Impressum\\Plugin' => __DIR__ . '/../..' . '/inc/class-plugin.php',
         'epiphyt\\Impressum\\Plugin_Container' => __DIR__ . '/../..' . '/inc/class-plugin-container.php',
         'epiphyt\\Impressum\\Singleton' => __DIR__ . '/../..' . '/inc/trait-singleton.php',
+        'epiphyt\\Impressum\\Site_Health' => __DIR__ . '/../..' . '/inc/class-site-health.php',
+        'epiphyt\\Impressum\\api\\REST_API' => __DIR__ . '/../..' . '/inc/api/class-rest-api.php',
+        'epiphyt\\Impressum\\api\\Settings_Controller' => __DIR__ . '/../..' . '/inc/api/class-settings-controller.php',
         'epiphyt\\Impressum\\blocks\\Block_Imprint' => __DIR__ . '/../..' . '/inc/blocks/class-block-imprint.php',
         'epiphyt\\Impressum\\blocks\\Block_Registry' => __DIR__ . '/../..' . '/inc/blocks/class-block-registry.php',
         'epiphyt\\Impressum\\settings\\Data' => __DIR__ . '/../..' . '/inc/settings/class-data.php',
+        'epiphyt\\Impressum\\settings\\Legacy_Renderer' => __DIR__ . '/../..' . '/inc/settings/class-legacy-renderer.php',
         'epiphyt\\Impressum\\settings\\Registry' => __DIR__ . '/../..' . '/inc/settings/class-registry.php',
+        'epiphyt\\Impressum\\settings\\Schema' => __DIR__ . '/../..' . '/inc/settings/class-schema.php',
         'epiphyt\\Impressum\\settings\\Setting' => __DIR__ . '/../..' . '/inc/settings/class-setting.php',
+        'epiphyt\\Impressum\\settings\\Tabs' => __DIR__ . '/../..' . '/inc/settings/class-tabs.php',
+        'epiphyt\\Impressum\\settings\\Validator' => __DIR__ . '/../..' . '/inc/settings/class-validator.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInitf8bb86e3b5ac727a614c18a81a2c5139::$classMap;
+            $loader->classMap = ComposerStaticInit4cfd0d44fb5a95b17df5b028c1e1298a::$classMap;
 
         }, null, ClassLoader::class);
     }

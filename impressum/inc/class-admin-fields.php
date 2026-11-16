@@ -86,7 +86,7 @@ class Admin_Fields {
 		$placeholder = ( ! empty( $options['default'][ $args['label_for'] ] ) && ! \is_network_admin() ? ' placeholder="' . \esc_attr( $options['default'][ $args['label_for'] ] ) . '"' : '' );
 		$value = ( isset( $options[ $args['label_for'] ] ) ? ' value="' . \esc_attr( ( $options[ $args['label_for'] ] ?? ( $options['default'][ $args['label_for'] ] ?? '' ) ) ) . '"' : '' );
 		?>
-		<input type="email" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]" class="regular-text"<?= $value . $placeholder . self::get_autocomplete_attribute( $args ); ?>><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<input type="email" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]" class="large-text"<?= $value . $placeholder . self::get_autocomplete_attribute( $args ); ?>><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<?php
 		if ( ! empty( $args['description'] ) ) {
 			echo '<p class="description impressum__description">' . \esc_html( $args['description'] ) . '</p>';
@@ -100,6 +100,29 @@ class Admin_Fields {
 		 * This action is described in inc/class-admin-fields.php
 		 */
 		\do_action( "impressum_option_description_{$args['label_for']}", $settings_name, $args, $options );
+	}
+	
+	/**
+	 * Describe a field type for the settings app.
+	 * 
+	 * A callback instance can describe its field types here instead of relying
+	 * on the markup its callback prints, which makes the settings app render
+	 * them like its built-in fields. Returning null falls back to the markup.
+	 * 
+	 * The descriptor needs a 'type' – one of 'checkbox', 'number', 'password',
+	 * 'radio', 'select', 'text', 'textarea' or 'url' – and may carry 'options'
+	 * as a list of label and value pairs, 'multiple', 'min', 'max', 'step',
+	 * 'suffix', 'disabled' and a 'notice' with a 'status' and a 'text'.
+	 * 
+	 * @since	3.1.0
+	 * 
+	 * @param	string								$type Field type
+	 * @param	mixed[]								$attributes Field attributes
+	 * @param	\epiphyt\Impressum\settings\Setting	$setting Setting to describe
+	 * @return	?mixed[] Control descriptor, or null to render the field's markup
+	 */
+	public function get_field_descriptor( string $type, array $attributes, \epiphyt\Impressum\settings\Setting $setting ): ?array { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
+		return null;
 	}
 	
 	/**
@@ -138,7 +161,7 @@ class Admin_Fields {
 			 * @since	2.1.0
 			 * @since	3.0.0 Second parameter is a Setting object now
 			 * 
-			 * @param	object								$this Current instance
+			 * @param	object								$callback_instance Current instance
 			 * @param	\epiphyt\Impressum\settings\Setting	$settings_field Current settings field
 			 * @param	string								$id Current field ID
 			 */
@@ -204,7 +227,7 @@ class Admin_Fields {
 		$placeholder = ( ! empty( $options['default'][ $args['label_for'] ] ) && ! \is_network_admin() ? ' placeholder="' . \esc_attr( $options['default'][ $args['label_for'] ] ) . '"' : '' );
 		$value = ( isset( $options[ $args['label_for'] ] ) ? ' value="' . \esc_attr( ( $options[ $args['label_for'] ] ?? ( $options['default'][ $args['label_for'] ] ?? '' ) ) ) . '"' : '' );
 		?>
-		<input type="text" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]" class="regular-text"<?= $value . $placeholder . self::get_autocomplete_attribute( $args ); ?>><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<input type="text" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]" class="large-text"<?= $value . $placeholder . self::get_autocomplete_attribute( $args ); ?>><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<?php
 		if ( ! empty( $args['description'] ) ) {
 			echo '<p class="description impressum__description">' . \esc_html( $args['description'] ) . '</p>';
@@ -233,7 +256,7 @@ class Admin_Fields {
 		}
 		
 		$settings_name = self::get_settings_name( $args );
-		$options = \epiphyt\Impressum\get_container()->get( 'helper' )::get_option( $settings_name, ! \is_network_admin() );
+		$options = \epiphyt\Impressum\get_container()->get( 'helper' )::get_option( $settings_name, true );
 		$dropdown = \wp_dropdown_pages( [
 			'echo' => 0,
 			'id' => \esc_attr( $args['label_for'] ),
@@ -275,7 +298,7 @@ class Admin_Fields {
 		$placeholder = ( ! empty( $options['default'][ $args['label_for'] ] ) && ! \is_network_admin() ? ' placeholder="' . \esc_attr( $options['default'][ $args['label_for'] ] ) . '"' : '' );
 		$value = ( isset( $options[ $args['label_for'] ] ) ? ' value="' . \esc_attr( ( $options[ $args['label_for'] ] ?? ( $options['default'][ $args['label_for'] ] ?? '' ) ) ) . '"' : '' );
 		?>
-		<input type="tel" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]" class="regular-text"<?= $value . $placeholder . self::get_autocomplete_attribute( $args ); ?>><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<input type="tel" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]" class="large-text"<?= $value . $placeholder . self::get_autocomplete_attribute( $args ); ?>><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<?php
 		if ( ! empty( $args['description'] ) ) {
 			echo '<p class="description impressum__description">' . \esc_html( $args['description'] ) . '</p>';
@@ -335,8 +358,9 @@ class Admin_Fields {
 		$options = \epiphyt\Impressum\get_container()->get( 'helper' )::get_option( $settings_name, ! \is_network_admin() );
 		$placeholder = ( ! empty( $options['default'][ $args['label_for'] ] ) && ! \is_network_admin() ? ' placeholder="' . \esc_html( \str_replace( "\r\n", ', ', $options['default'][ $args['label_for'] ] ) ) . '"' : '' );
 		$value = ( isset( $options[ $args['label_for'] ] ) ? \esc_attr( ( $options[ $args['label_for'] ] ?? ( $options['default'][ $args['label_for'] ] ?? '' ) ) ) : '' );
+		$rows = ! empty( $args['rows'] ) && \is_int( $args['rows'] ) ? $args['rows'] : 10;
 		?>
-		<textarea cols="50" rows="10" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]"<?= $placeholder . self::get_autocomplete_attribute( $args ); ?>><?= $value; ?></textarea><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<textarea rows="<?= \esc_attr( (string) $rows ) ?>" id="<?= \esc_attr( $args['label_for'] ); ?>" name="<?= \esc_attr( $settings_name ); ?>[<?= \esc_attr( $args['label_for'] ); ?>]"<?= $placeholder . self::get_autocomplete_attribute( $args ); ?> class="large-text"><?= $value; ?></textarea><?php // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		<?php
 		if ( ! empty( $args['description'] ) ) {
 			echo '<p class="description impressum__description">' . \esc_html( $args['description'] ) . '</p>';
